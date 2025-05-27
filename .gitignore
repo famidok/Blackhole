@@ -6,3 +6,6 @@ trash/
 
 # Object files
 *.o
+
+# Build
+build/
