@@ -1,0 +1,14 @@
+# IntelliJ IDEA
+.idea/
+
+# Dumps
+trash/
+
+# Object files
+*.o
+
+# Build
+build/
+
+# .DS_Store
+.DS_Store
