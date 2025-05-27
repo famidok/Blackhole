@@ -44,7 +44,7 @@ struct
     __type(value, __u8);
     __uint(pinning, LIBBPF_PIN_BY_NAME);
     __uint(map_flags, BPF_F_NO_PREALLOC);
-} destination_ports SEC(".maps");
+} dst_ports SEC(".maps");
 
 struct
 {

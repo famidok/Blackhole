@@ -59,6 +59,8 @@ int blacklist(struct xdp_md *ctx)
 
     t_tuple.source_ip = iph->saddr;
     t_tuple.destination_ip = iph->daddr;
+    pair.source_ip = iph->saddr;
+    pair.destination_ip = iph->daddr;
     source_ip = iph->saddr;
     destination_ip = iph->daddr;
 
@@ -83,15 +85,7 @@ int blacklist(struct xdp_md *ctx)
 
         t_tuple.destination_port = udph->dest;
         destination_port = udph->dest;
-
     }
-    else
-    {
-        return XDP_PASS;
-    }
-
-    pair.source_ip = iph->saddr;
-    pair.destination_ip = iph->daddr;
 
     // Three Tuple Drop
     if (check_and_drop(&three_tuples, &t_tuple))
@@ -118,7 +112,7 @@ int blacklist(struct xdp_md *ctx)
     }
 
     // DPort DROP
-    if (check_and_drop(&destination_ports, &destination_port))
+    if (check_and_drop(&dst_ports, &destination_port))
     {
         return XDP_DROP;
     }

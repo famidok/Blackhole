@@ -1,2 +1,8 @@
 # IntelliJ IDEA
 .idea/
+
+# Dumps
+trash/
+
+# Object files
+*.o
