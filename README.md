@@ -2,6 +2,8 @@
 
 **Blackhole** is an XDP-based packet filtering tool that allows fine-grained banning of traffic based on various criteria such as source/destination IPs, ports, and interfaces using eBPF maps.
 
+![Blackhole Logo](images/Blackhole_Chart.jpg)
+
 ---
 
 ## ✨ Features
