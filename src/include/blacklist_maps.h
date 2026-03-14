@@ -48,16 +48,6 @@ struct
 
 struct
 {
-    __uint(type, BPF_MAP_TYPE_LPM_TRIE);
-    __uint(max_entries, MAX_ENTRY);
-    __type(key, struct ipv4_lpm_key);
-    __type(value, __u8);
-    __uint(pinning, LIBBPF_PIN_BY_NAME);
-    __uint(map_flags, BPF_F_NO_PREALLOC);
-} subnets SEC(".maps");
-
-struct
-{
     __uint(type, BPF_MAP_TYPE_HASH);
     __uint(max_entries, MAX_ENTRY);
     __type(key, __u8[6]);
@@ -76,6 +66,14 @@ struct
     __uint(map_flags, BPF_F_NO_PREALLOC);
 } three_tuples SEC(".maps");
 
-
+struct
+{
+    __uint(type, BPF_MAP_TYPE_HASH);
+    __uint(max_entries, MAX_ENTRY);
+    __type(key, __u8);
+    __type(value, __u8);
+    __uint(pinning, LIBBPF_PIN_BY_NAME);
+    __uint(map_flags, BPF_F_NO_PREALLOC);
+} protocols SEC(".maps");
 
 #endif //BLACKLIST_MAPS_H

@@ -34,5 +34,4 @@ struct ipv4_lpm_key
     __u32 data;
 };
 
-
 #endif //BLACKLIST_TYPES_H

@@ -15,6 +15,7 @@ You can ban or allow traffic based on:
 - Blocking based on a specific **Source–Destination IP pair**
 - Blocking based on a **three-tuple** (Source IP, Destination IP, Port), e.g., blocking a specific SSH connection
 - Blocking based on a specific **Port** (e.g., port 22)
+- Blocking based on a specific **Protocol** (e.g., ICMP)
 - Blocking traffic on a specific **Network Interface**
 
 ---
@@ -39,7 +40,7 @@ The compiled binaries and object files will be placed under the `build/` directo
 Use the provided run script to start everything:
 
 ```bash
-bash /scripts/run_blacklist.sh
+sudo ./Run.sh
 ```
 
 The script will:
@@ -49,6 +50,21 @@ The script will:
 4. Load values into eBPF maps using `blacklist_map`
 
 > **Note:** The script requires `sudo` privileges to attach the XDP program and access system resources.
+
+---
+## 🛑 Stopping and Unloading
+If you want to stop the packet filtering and remove the XDP program from the network interface, use the provided unload script:
+
+```bash
+./Unload.sh
+```
+The script will:
+
+1. Identify the network interface where the program is attached.
+2. Detach the XDP program from the interface.
+3. Clean up the eBPF maps associated with the filter.
+
+> **Warning:** Once unloaded, all traffic previously blocked by Blackhole will be allowed again immediately.
 
 ---
 ## 📦 Requirements

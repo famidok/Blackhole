@@ -63,8 +63,9 @@ int blacklist(struct xdp_md *ctx)
     pair.destination_ip = iph->daddr;
     source_ip = iph->saddr;
     destination_ip = iph->daddr;
+    __u8 protocol = iph->protocol;
 
-    if (iph->protocol == IPPROTO_TCP)
+    if (protocol == IPPROTO_TCP)
     {
         struct tcphdr *tcph = (struct tcphdr *)(iph + 1);
         if ((void *)(tcph + 1) > data_end)
@@ -75,7 +76,7 @@ int blacklist(struct xdp_md *ctx)
         t_tuple.destination_port = tcph->dest;
         destination_port = tcph->dest;
     }
-    else if (iph->protocol == IPPROTO_UDP)
+    else if (protocol == IPPROTO_UDP)
     {
         struct udphdr *udph = (struct udphdr *)(iph + 1);
         if ((void *)(udph + 1) > data_end)
@@ -87,40 +88,13 @@ int blacklist(struct xdp_md *ctx)
         destination_port = udph->dest;
     }
 
-    // Three Tuple Drop
-    if (check_and_drop(&three_tuples, &t_tuple))
-    {
-        return XDP_DROP;
-    }
-
-    // SIP - DIP Drop
-    if (check_and_drop(&ip_pairs, &pair))
-    {
-        return XDP_DROP;
-    }
-
-    // SIP DROP
-    if (check_and_drop(&source_ips, &iph->saddr))
-    {
-        return XDP_DROP;
-    }
-
-    // DIP DROP
-    if (check_and_drop(&destination_ips, &iph->daddr))
-    {
-        return XDP_DROP;
-    }
-
-    // DPort DROP
-    if (check_and_drop(&dst_ports, &destination_port))
-    {
-        return XDP_DROP;
-    }
-
-    // Subnet DROP
-
-    // Interface DROP
-    if (check_and_drop(&interfaces, intf.interface))
+    if (check_and_drop(&three_tuples, &t_tuple) ||
+        check_and_drop(&ip_pairs, &pair)        ||
+        check_and_drop(&source_ips, &iph->saddr)||
+        check_and_drop(&destination_ips, &iph->daddr) ||
+        check_and_drop(&dst_ports, &destination_port) ||
+        check_and_drop(&protocols, &protocol) ||
+        check_and_drop(&interfaces, intf.interface))
     {
         return XDP_DROP;
     }

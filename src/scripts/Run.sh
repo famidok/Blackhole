@@ -1,45 +1,69 @@
 #!/bin/bash
 
-read -p "Enter the interface name (e.g., enp0s1): " IFACE
+BLACKLIST_O="build/blacklist.o"
+BLACKLIST_CONFIG_WRITER="build/blacklist_config_writer"
+BLACKLIST_MAP="build/blacklist_map"
 
-BLACKLIST_O="../build/blacklist.o"
-BLACKLIST_CONFIG_WRITER="../build/blacklist_config_writer"
-BLACKLIST_MAP="../build/blacklist_map"
-
-if [ ! -f "$BLACKLIST_O" ]; then
-    echo "Error: $BLACKLIST_O not found!"
-    exit 1
+if [ "$EUID" -ne 0 ]; then
+  echo "Error: Please run as root (use sudo)"
+  exit 1
 fi
 
-if [ ! -f "$BLACKLIST_CONFIG_WRITER" ]; then
-    echo "Error: $BLACKLIST_CONFIG_WRITER not found!"
-    exit 1
-fi
+check_files() {
+    local files=("$BLACKLIST_O" "$BLACKLIST_CONFIG_WRITER" "$BLACKLIST_MAP")
+    for file in "${files[@]}"; do
+        if [ ! -f "$file" ]; then
+            echo "Error: $file not found! Run 'make' first."
+            exit 1
+        fi
+    done
+}
 
-if [ ! -f "$BLACKLIST_MAP" ]; then
-    echo "Error: $BLACKLIST_MAP not found!"
-    exit 1
-fi
+select_interface() {
+    local interfaces=$(ip -o link show | awk -F': ' '{print $2}' | grep -v "lo")
+    echo "Available network interfaces:"
+    select opt in $interfaces "Exit"; do
+        if [ "$opt" == "Exit" ]; then
+            exit 0
+        elif [ -n "$opt" ]; then
+            IFACE=$opt
+            break
+        else
+            echo "Invalid selection."
+        fi
+    done
+}
 
-echo "Loading blacklist.o object requires sudo privileges..."
-sudo ip link set "$IFACE" xdpgeneric obj "$BLACKLIST_O" sec prog
+check_files
+select_interface
+
+echo "------------------------------------------------"
+echo "Step 1: Loading XDP program onto $IFACE..."
+ip link set "$IFACE" xdpgeneric obj "$BLACKLIST_O" sec prog
 if [ $? -ne 0 ]; then
-    echo "Failed to load blacklist.o!"
+    echo "FAILED: Could not load $BLACKLIST_O"
     exit 1
 fi
+echo "SUCCESS: XDP program loaded."
 
-echo "Running blacklist_config_writer..."
-"$BLACKLIST_CONFIG_WRITER"
+echo "------------------------------------------------"
+echo "Step 2: Starting Configuration Writer..."
+./"$BLACKLIST_CONFIG_WRITER"
 if [ $? -ne 0 ]; then
-    echo "blacklist_config_writer failed!"
+    echo "FAILED: Configuration writer exited with error."
     exit 1
 fi
 
-echo "Running blacklist_map with sudo..."
-sudo "$BLACKLIST_MAP"
+echo "------------------------------------------------"
+echo "Step 3: Populating eBPF Maps..."
+./"$BLACKLIST_MAP"
 if [ $? -ne 0 ]; then
-    echo "blacklist_map failed!"
+    echo "FAILED: Map loader (blacklist_map) failed."
     exit 1
 fi
 
-echo "All operations completed successfully."
+echo "------------------------------------------------"
+echo "DEPLOYMENT COMPLETE"
+echo "Interface: $IFACE"
+echo "Status: Active"
+echo "------------------------------------------------"
