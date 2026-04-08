@@ -31,7 +31,7 @@ struct interface_info
 struct ipv4_lpm_key
 {
     __u32 prefixlen;
-    __u32 data;
+    __u32 ip;
 };
 
 #endif //BLACKLIST_TYPES_H

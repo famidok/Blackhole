@@ -25,9 +25,9 @@ $(BUILD_DIR)/blacklist_map: src/maps/blacklist_map.c | $(BUILD_DIR)
 
 copy_script:
 	cp src/scripts/Run.sh ./Run.sh
-	cp src/scripts/Unload.sh ./Unload.sh
+ 	cp src/scripts/Unload.sh ./Unload.sh
 	chmod +x ./Run.sh
-	chmod +x ./Unload.sh
+ 	chmod +x ./Unload.sh
 
 clean:
 	rm -rf $(BUILD_DIR)
