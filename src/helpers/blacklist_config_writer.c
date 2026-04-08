@@ -144,16 +144,17 @@ int main(void) {
     fprintf(fp, "{\n");
     const char *f1[] = {"source_ip", "destination_ip", "destination_port", "allow"};
     const char *f2[] = {"source_ip", "destination_ip", "allow"};
-    const char *f3[] = {"destination_ip", "allow"};
+    const char *f7[] = {"subnet", "allow"};
     const char *f4[] = {"source_ip", "allow"};
+    const char *f3[] = {"destination_ip", "allow"};
     const char *f5[] = {"protocol", "allow"};
     const char *f6[] = {"interface_name", "allow"};
     struct { const char *k; int c; const char **f; } s[] = {
-        {"three_tuple", 4, f1}, {"ip_to_ip", 3, f2}, {"any_to_ip", 2, f3},
-        {"ip_to_any", 2, f4}, {"protocols", 2, f5}, {"interfaces", 2, f6}
+        {"three_tuple", 4, f1}, {"ip_to_ip", 3, f2}, {"subnets", 2, f7}, {"any_to_ip", 2, f3},
+        {"ip_to_any", 2, f4}, {"protocols", 2, f5}, {"interfaces", 2, f6},
     };
     int first = 1;
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 7; i++) {
         char p[128]; snprintf(p, sizeof(p), "Add entries for '%s'?", s[i].k);
         if (get_yes_no(p)) {
             if (!first) fprintf(fp, ",\n");
