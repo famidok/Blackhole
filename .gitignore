@@ -10,8 +10,6 @@ trash/
 # Build
 build/
 blacklist_config.json
-Run.sh
-Unload.sh
 
 # .DS_Store
 .DS_Store
