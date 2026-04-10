@@ -3,6 +3,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdint.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <ifaddrs.h>
 
 #define MAX_FIELD 64
 
@@ -102,6 +105,57 @@ void write_json_array(FILE *fp, const char *key, int fields, const char *field_n
                     }
                     printf("Error: Invalid port.\n");
                 }
+            } else if (strcmp(field_names[i], "subnet") == 0) {
+                while (1) {
+                    printf("Enter subnet in CIDR format (e.g., 192.168.1.0/24): ");
+                    fgets(buffer, sizeof(buffer), stdin);
+                    buffer[strcspn(buffer, "\n")] = 0;
+                    char ip_part[16]; // Only supports IPv4
+                    int prefix;
+                    if (sscanf(buffer, "%[^/]/%d", ip_part, &prefix) == 2 && prefix >= 0 && prefix <= 32) {
+                        fprintf(fp, "\"%s\"", buffer);
+                        break;
+                    }
+                    printf("Error: Invalid CIDR format or prefix range (0-32).\n");
+                }
+            } else if (strcmp(field_names[i], "interface_name") == 0) {
+                struct ifaddrs *ifaddr, *ifa;
+                int found;
+
+                while (1) {
+                    if (getifaddrs(&ifaddr) == -1) {
+                        perror("getifaddrs");
+                        break;
+                    }
+
+                    printf("Available interfaces: ");
+                    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+                        if (ifa->ifa_addr != NULL && ifa->ifa_addr->sa_family == AF_PACKET) {
+                            printf("%s ", ifa->ifa_name);
+                        }
+                    }
+                    printf("\nEnter the interface name: ");
+
+                    fgets(buffer, sizeof(buffer), stdin);
+                    buffer[strcspn(buffer, "\n")] = 0;
+
+                    found = 0;
+                    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+                        if (strcmp(ifa->ifa_name, buffer) == 0) {
+                            found = 1;
+                            break;
+                        }
+                    }
+
+                    freeifaddrs(ifaddr);
+
+                    if (found) {
+                        fprintf(fp, "\"%s\"", buffer);
+                        break;
+                    }
+
+                    printf("Error: Interface '%s' not found on this system.\n", buffer);
+                }
             } else {
                 while (1) {
                     printf("%s: ", field_names[i]);
@@ -132,7 +186,10 @@ int main(void) {
         printf("Select mode (new/reset): ");
         fgets(mode, sizeof(mode), stdin);
         mode[strcspn(mode, "\n")] = 0;
-        if (strcmp(mode, "new") == 0 || strcmp(mode, "reset") == 0) break;
+        if (strcmp(mode, "new") == 0 || strcmp(mode, "reset") == 0) {
+            break;
+        }
+        printf("Error: Invalid mode. Please select 'new' or 'reset'.\n");
     }
     if (strcmp(mode, "reset") == 0) {
         FILE *fp = fopen("../blacklist_config.json", "w");
